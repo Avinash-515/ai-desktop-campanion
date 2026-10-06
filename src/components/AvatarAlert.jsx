@@ -16,9 +16,9 @@ export function AvatarAlert({
       <div className="avatar-desktop-corner-dock" onClick={(e) => e.stopPropagation()}>
         <DesktopOverlayCompanion
           reminder={alert}
-          onFinish={() => {
-            onDismiss();
-          }}
+          onFinish={onDismiss}
+          onComplete={onComplete}
+          onSnooze={onSnooze}
           soundEnabled={soundEnabled}
           characterConfig={avatarConfig}
         />

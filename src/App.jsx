@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { DashboardTab } from "./components/DashboardTab";
@@ -83,6 +84,7 @@ function MainApp() {
   const [loadedDoc, setLoadedDoc] = useState(null);
   const [avatarAlert, setAvatarAlert] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [pipWindow, setPipWindow] = useState(null);
 
   // Hydration state
   const [hydrationCount, setHydrationCount] = useState(() => {
@@ -191,6 +193,76 @@ function MainApp() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // Picture-in-Picture Floating Window Manager
+  const togglePiP = useCallback(async () => {
+    if (pipWindow) {
+      try {
+        pipWindow.close();
+      } catch {
+        // ignore
+      }
+      setPipWindow(null);
+      return;
+    }
+
+    if (!desktopService.isPiPSupported()) {
+      addToast({
+        type: "info",
+        title: "Picture-in-Picture",
+        message: "Document Picture-in-Picture is supported in Chrome & Edge browsers."
+      });
+      return;
+    }
+
+    try {
+      const win = await window.documentPictureInPicture.requestWindow({
+        width: 340,
+        height: 480
+      });
+
+      // Transfer active stylesheets so 3D avatar & bubble match the main window
+      [...document.styleSheets].forEach((styleSheet) => {
+        try {
+          const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join("");
+          const style = win.document.createElement("style");
+          style.textContent = cssRules;
+          win.document.head.appendChild(style);
+        } catch {
+          if (styleSheet.href) {
+            const link = win.document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = styleSheet.href;
+            win.document.head.appendChild(link);
+          }
+        }
+      });
+
+      win.document.body.style.margin = "0";
+      win.document.body.style.background = "#080d1a";
+      win.document.body.style.overflow = "hidden";
+      win.document.title = `${companionName} • Floating Companion`;
+
+      win.addEventListener("pagehide", () => {
+        setPipWindow(null);
+      });
+
+      setPipWindow(win);
+
+      addToast({
+        type: "success",
+        title: "Avatar Floating On Screen",
+        message: "Your 3D companion stays visible on top of all other tabs and apps!"
+      });
+    } catch (err) {
+      console.warn("Failed to open PiP window:", err);
+      addToast({
+        type: "error",
+        title: "Floating Window Error",
+        message: err.message || "Could not open floating window"
+      });
+    }
+  }, [pipWindow, companionName, addToast]);
+
   // Sync state to LocalStorage
   useEffect(() => {
     try {
@@ -243,14 +315,19 @@ function MainApp() {
 
   // Reminders Watcher & Tab Visibility Listener: checks every second and syncs immediately on tab switch
   useEffect(() => {
+    let titleInterval = null;
+    const originalTitle = "AI Desktop Companion";
+
     const checkDueReminders = () => {
       const now = Date.now();
       setReminders((prevReminders) => {
         let changed = false;
+        let dueItem = null;
         const updated = prevReminders.map((r) => {
           if (!r.completed && !r.notified && r.dueAt <= now) {
             changed = true;
-            // 1. Trigger the 3D Avatar overlay onto the desktop over user's apps!
+            dueItem = r;
+            // 1. Trigger the 3D Avatar overlay onto the desktop
             desktopService.triggerOverlay({
               id: r.id,
               title: r.title,
@@ -258,7 +335,7 @@ function MainApp() {
               category: r.category
             });
 
-            // 2. Also keep corner alert fallback
+            // 2. Corner avatar alert fallback
             setAvatarAlert({
               reminderId: r.id,
               title: r.title,
@@ -282,6 +359,19 @@ function MainApp() {
           return r;
         });
 
+        // If a reminder triggered while user is in another browser tab, flash tab title
+        if (dueItem && document.hidden) {
+          if (!titleInterval) {
+            let toggle = false;
+            titleInterval = setInterval(() => {
+              document.title = toggle
+                ? `🚨 TIME FOR: ${dueItem.title.toUpperCase()}!`
+                : `⏰ [COMPANION ALERT] Click to Return`;
+              toggle = !toggle;
+            }, 1000);
+          }
+        }
+
         return changed ? updated : prevReminders;
       });
     };
@@ -291,6 +381,11 @@ function MainApp() {
     // Sync immediately when returning to tab from another browser tab / minimizing
     const handleVisibilitySync = () => {
       if (!document.hidden) {
+        if (titleInterval) {
+          clearInterval(titleInterval);
+          titleInterval = null;
+          document.title = originalTitle;
+        }
         checkDueReminders();
         refreshStats();
       }
@@ -301,6 +396,10 @@ function MainApp() {
 
     return () => {
       clearInterval(timer);
+      if (titleInterval) {
+        clearInterval(titleInterval);
+        document.title = originalTitle;
+      }
       document.removeEventListener("visibilitychange", handleVisibilitySync);
       window.removeEventListener("focus", handleVisibilitySync);
     };
@@ -433,6 +532,9 @@ function MainApp() {
           onToggleSound={() => setSoundEnabled((prev) => !prev)}
           persona={currentPersona}
           isElectron={desktopService.isElectron()}
+          isPiPSupported={desktopService.isPiPSupported()}
+          isPiPActive={Boolean(pipWindow)}
+          onTogglePiP={togglePiP}
         />
 
         <div className="tab-render-container">
@@ -468,7 +570,7 @@ function MainApp() {
               }}
               onTriggerDesktopAlert={(rem) => {
                 desktopService.triggerOverlay(rem);
-                setAvatarAlert(rem);
+                setAvatarAlert({ ...rem, reminderId: rem.id || "test-rem" });
                 addToast({
                   type: "info",
                   title: "Desktop Avatar Walk-In",
@@ -489,6 +591,9 @@ function MainApp() {
                   });
                 }
               }}
+              isPiPSupported={desktopService.isPiPSupported()}
+              isPiPActive={Boolean(pipWindow)}
+              onTogglePiP={togglePiP}
             />
           </div>
 
@@ -572,8 +677,11 @@ function MainApp() {
               soundEnabled={soundEnabled}
               onTriggerAvatarAlert={(rem) => {
                 desktopService.triggerOverlay(rem);
-                setAvatarAlert(rem);
+                setAvatarAlert({ ...rem, reminderId: rem.id || "test-rem" });
               }}
+              isPiPSupported={desktopService.isPiPSupported()}
+              isPiPActive={Boolean(pipWindow)}
+              onTogglePiP={togglePiP}
             />
           </div>
 
@@ -652,7 +760,56 @@ function MainApp() {
             });
           }}
           soundEnabled={soundEnabled}
+          avatarConfig={avatarConfig}
         />
+
+        {/* Document Picture-in-Picture Floating Window Portal (Always on Top across all other tabs/windows) */}
+        {pipWindow &&
+          createPortal(
+            <div className="pip-companion-root">
+              <DesktopOverlayCompanion
+                reminder={
+                  avatarAlert || {
+                    id: "pip-standby",
+                    title: `${companionName} is Floating`,
+                    category: "general",
+                    description: "Watching over your tabs! Reminders will alert you right here."
+                  }
+                }
+                characterConfig={avatarConfig}
+                onFinish={() => {
+                  if (avatarAlert) setAvatarAlert(null);
+                }}
+                onComplete={(reminderId) => {
+                  if (reminderId) {
+                    setReminders((prev) =>
+                      prev.map((r) => (r.id === reminderId ? { ...r, completed: true } : r))
+                    );
+                  }
+                  setAvatarAlert(null);
+                }}
+                onSnooze={(reminderId, minutes) => {
+                  if (reminderId) {
+                    setReminders((prev) =>
+                      prev.map((r) =>
+                        r.id === reminderId
+                          ? { ...r, dueAt: Date.now() + minutes * 60 * 1000, notified: false, completed: false }
+                          : r
+                      )
+                    );
+                  }
+                  setAvatarAlert(null);
+                  addToast({
+                    type: "info",
+                    title: "Reminder Snoozed",
+                    message: `Snoozed for ${minutes} minutes`
+                  });
+                }}
+                soundEnabled={soundEnabled}
+              />
+            </div>,
+            pipWindow.document.body
+          )}
       </main>
     </div>
   );

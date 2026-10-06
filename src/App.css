@@ -3051,6 +3051,283 @@ html.overlay-mode {
   pointer-events: none;
 }
 
+/* =========================================================
+   Corner Avatar Overlay Alert (Floats on Top of All App Tabs)
+   ========================================================= */
+
+.avatar-desktop-corner-wrapper {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999999;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  animation: cornerBackdropFadeIn 0.3s ease both;
+}
+
+@keyframes cornerBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.avatar-desktop-corner-dock {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: cornerAvatarSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cornerAvatarSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.88);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.overlay-btn-dismiss {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overlay-btn-dismiss:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.btn-float-pip {
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #c084fc;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-float-pip:hover,
+.btn-float-pip.active {
+  background: rgba(139, 92, 246, 0.35);
+  border-color: #c084fc;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.icon-btn.pip-active {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.pip-window-body {
+  margin: 0;
+  padding: 0;
+  background: #080d1a;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.pip-overlay-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.pip-companion-root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at 50% 20%, #171c32 0%, #080d1a 80%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.pip-companion-root .desktop-overlay-wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+}
+
+.pip-companion-root .overlay-human-speech-bubble {
+  max-width: 290px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+}
+
+.pip-companion-root .overlay-bubble-text {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.pip-companion-root .overlay-3d-character-stage {
+  height: 290px;
+}
+
+.pip-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #c084fc;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pip-header-btn:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: #c084fc;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.pip-header-btn.active {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.6);
+}
+
+.pip-icon {
+  font-size: 13px;
+}
+
+.pip-label {
+  letter-spacing: 0.2px;
+}
+
+.btn-pip-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #c084fc;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pip-hero:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: #c084fc;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+
+.btn-pip-hero.active {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
+}
+
+.reminders-pip-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.pip-banner-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.pip-banner-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pip-banner-title {
+  color: #e2e8f0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.pip-banner-desc {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.btn-pip-banner {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 12px rgba(124, 58, 237, 0.35);
+}
+
+.btn-pip-banner:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5);
+}
+
+.btn-pip-banner.active {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  box-shadow: none;
+}
+
 .desktop-overlay-wrapper {
   position: relative;
   width: 440px;

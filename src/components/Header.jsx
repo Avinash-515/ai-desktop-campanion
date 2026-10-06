@@ -9,7 +9,10 @@ export function Header({
   soundEnabled,
   onToggleSound,
   persona,
-  isElectron
+  isElectron,
+  isPiPSupported,
+  isPiPActive,
+  onTogglePiP
 }) {
   const memPercent = systemStats?.memPercent ?? 42;
   const cpuSpeed = systemStats?.cpuCount ? `${systemStats.cpuCount} Cores` : "Active";
@@ -52,6 +55,22 @@ export function Header({
       </div>
 
       <div className="header-right">
+        {isPiPSupported && (
+          <button
+            className={`pip-header-btn ${isPiPActive ? "active" : ""}`}
+            onClick={onTogglePiP}
+            title={
+              isPiPActive
+                ? "Close floating 3D avatar window"
+                : "Float 3D Avatar (stays visible when browsing other tabs and apps)"
+            }
+            aria-label="Toggle Picture in Picture Floating Avatar"
+          >
+            <span className="pip-icon">📌</span>
+            <span className="pip-label">{isPiPActive ? "Floating" : "Float Avatar"}</span>
+          </button>
+        )}
+
         <button
           className={`icon-btn ${!soundEnabled ? "muted" : ""}`}
           onClick={onToggleSound}

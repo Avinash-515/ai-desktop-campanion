@@ -6,6 +6,8 @@ import { desktopService } from "../services/desktopService";
 export function DesktopOverlayCompanion({
   reminder = null,
   onFinish = () => {},
+  onComplete,
+  onSnooze,
   soundEnabled = true,
   characterConfig
 }) {
@@ -70,6 +72,10 @@ export function DesktopOverlayCompanion({
     setIsDone(true);
     setAnimState("drink"); // Raises bottle, smiles, gives thumbs-up
 
+    if (onComplete) {
+      onComplete(activeReminder.reminderId || activeReminder.id);
+    }
+
     const confirmText = isWater ? "Nice! Stay hydrated 💧" : "Awesome job! 👍";
     setSpeechBubbleText(confirmText);
 
@@ -92,6 +98,10 @@ export function DesktopOverlayCompanion({
     setShowButtons(false);
     setShowSnoozeOptions(false);
     setAnimState("snooze");
+
+    if (onSnooze) {
+      onSnooze(activeReminder.reminderId || activeReminder.id, minutes);
+    }
 
     setSpeechBubbleText(`Okay, I'll remind you in ${minutes}m. ⏳`);
 
@@ -116,6 +126,14 @@ export function DesktopOverlayCompanion({
             <span className="live-pulse-dot"></span>
             <span>Virtual Companion</span>
           </div>
+          <button
+            className="overlay-btn-dismiss"
+            onClick={onFinish}
+            title="Close Alert"
+            aria-label="Close Alert"
+          >
+            ✕
+          </button>
         </div>
 
         <p className="overlay-bubble-text">{speechBubbleText}</p>

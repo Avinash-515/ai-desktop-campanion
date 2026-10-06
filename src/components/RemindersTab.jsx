@@ -11,7 +11,10 @@ export function RemindersTab({
   onAddToast,
   soundService,
   soundEnabled,
-  onTriggerAvatarAlert
+  onTriggerAvatarAlert,
+  isPiPSupported,
+  isPiPActive,
+  onTogglePiP
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -133,6 +136,26 @@ export function RemindersTab({
           </button>
         </div>
       </div>
+
+      {isPiPSupported && (
+        <div className="reminders-pip-banner">
+          <div className="flex-row items-center gap-2">
+            <span className="pip-banner-icon">📌</span>
+            <div className="pip-banner-text-wrap">
+              <span className="pip-banner-title">Keep Avatar Floating Over Other Tabs:</span>
+              <span className="pip-banner-desc">
+                When switching to other browser tabs (YouTube, Docs, Google), float the 3D Avatar in an Always-On-Top window so your reminders never get missed!
+              </span>
+            </div>
+          </div>
+          <button
+            className={`btn-pip-banner ${isPiPActive ? "active" : ""}`}
+            onClick={onTogglePiP}
+          >
+            {isPiPActive ? "📌 Avatar Floating (Active)" : "📌 Float Avatar Now"}
+          </button>
+        </div>
+      )}
 
       {/* Quick Schedule Presets */}
       <div className="presets-bar">

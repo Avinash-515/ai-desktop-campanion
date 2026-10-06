@@ -13,7 +13,10 @@ export function DashboardTab({
   onChangeAvatarConfig,
   onOpenCreateModal,
   hydrationCount,
-  onIncrementHydration
+  onIncrementHydration,
+  isPiPSupported,
+  isPiPActive,
+  onTogglePiP
 }) {
   const [previewState, setPreviewState] = useState("idle");
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -129,7 +132,16 @@ export function DashboardTab({
             </div>
             <div className="studio-badges-row">
               <span className="studio-fps-tag">60 FPS</span>
-              <span className="studio-status-tag">Live 3D Skeletal</span>
+              <span className="studio-status-tag">Live 3D</span>
+              {isPiPSupported && (
+                <button
+                  className={`btn-float-pip ${isPiPActive ? "active" : ""}`}
+                  onClick={onTogglePiP}
+                  title="Float 3D Avatar in an Always-On-Top window over all other browser tabs and apps"
+                >
+                  {isPiPActive ? "📌 Floating (On Screen)" : "📌 Float on Screen"}
+                </button>
+              )}
             </div>
           </div>
 
@@ -299,6 +311,16 @@ export function DashboardTab({
                     >
                       🚀 Test Avatar Popup
                     </button>
+
+                    {isPiPSupported && (
+                      <button
+                        className={`btn-pip-hero ${isPiPActive ? "active" : ""}`}
+                        onClick={onTogglePiP}
+                        title="Keep 3D avatar floating on top of all other tabs and applications"
+                      >
+                        📌 {isPiPActive ? "Avatar Floating (On Screen)" : "Float Over Other Tabs"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

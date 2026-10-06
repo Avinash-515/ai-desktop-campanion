@@ -169,16 +169,46 @@ This companion connects with your local operating system, monitors hardware, lau
       return await window.desktopAPI.sendNotification({ title, body });
     }
     if ("Notification" in window && Notification.permission === "granted") {
-      new Notification(title, { body });
+      try {
+        const notif = new Notification(title, {
+          body,
+          icon: "/favicon.svg",
+          requireInteraction: true
+        });
+        notif.onclick = () => {
+          if (typeof window !== "undefined") {
+            window.focus();
+          }
+        };
+      } catch (err) {
+        console.warn("Notification error:", err);
+      }
       return { success: true };
     } else if ("Notification" in window && Notification.permission !== "denied") {
       Notification.requestPermission().then((perm) => {
         if (perm === "granted") {
-          new Notification(title, { body });
+          try {
+            const notif = new Notification(title, {
+              body,
+              icon: "/favicon.svg",
+              requireInteraction: true
+            });
+            notif.onclick = () => {
+              if (typeof window !== "undefined") {
+                window.focus();
+              }
+            };
+          } catch (err) {
+            console.warn("Notification error:", err);
+          }
         }
       });
     }
     return { success: true };
+  },
+
+  isPiPSupported() {
+    return typeof window !== "undefined" && "documentPictureInPicture" in window;
   },
 
   windowMinimize() {
